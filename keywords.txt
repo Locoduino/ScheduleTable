@@ -13,7 +13,7 @@ ScheduleTable	KEYWORD1
 #######################################
 
 at	KEYWORD2
-startPeriodic	KEYWORD2
+start	KEYWORD2
 stop	KEYWORD2
 update	KEYWORD2
 

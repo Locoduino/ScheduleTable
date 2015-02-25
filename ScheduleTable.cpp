@@ -59,7 +59,7 @@ void ScheduleTable::update()
 }
 
 /* Start the schedule table periodic */
-void ScheduleTable::startPeriodic(unsigned int howMuch)
+void ScheduleTable::start(unsigned int howMuch)
 {
   mOrigin = millis();
   mCurrent = 0;

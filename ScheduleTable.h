@@ -89,7 +89,7 @@ public:
   /* Look for action to perform */
   void update();
   /* Start the schedule table periodic or one shot */
-  void startPeriodic(unsigned int howMuch = 0);
+  void start(unsigned int howMuch = 0);
   /* Stop the schedule table */
   void stop();
   /* Print the whole schedule table for debugging purpose */
