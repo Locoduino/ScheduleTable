@@ -15,6 +15,8 @@ void ScheduleTableAction::print()
   Serial.println(mOffset);
 }
 
+ScheduleTable *ScheduleTable::scheduleTableList = NULL;
+
 void ScheduleTable::at(
   unsigned long offset,
   function action)
@@ -37,7 +39,7 @@ void ScheduleTable::at(
   }
 }
 
-void ScheduleTable::update()
+void ScheduleTable::updateIt()
 {
   if (mState != SCHEDULETABLE_STOPPED) {
     unsigned long currentDate = millis();
@@ -81,4 +83,12 @@ void ScheduleTable::print()
     mAction[index].print();
   }
 }
-  
+
+void ScheduleTable::update()
+{
+  ScheduleTable *currentScheduleTable = scheduleTableList;
+  while (currentScheduleTable) {
+    currentScheduleTable->updateIt();
+    currentScheduleTable = currentScheduleTable->mNext;
+  }
+}

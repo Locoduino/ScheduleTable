@@ -70,7 +70,13 @@ private:
   byte mMaxSize;
   byte mCurrent;
   byte mState;
+  ScheduleTable *mNext;
   
+  static ScheduleTable *scheduleTableList;
+  
+  /* Look for action to perform */
+  void updateIt();
+
 public:
   /* Constructor. Does the initialization of the Schedule Table */
   ScheduleTable(byte size, unsigned long period, unsigned long timeBase = 1) :
@@ -82,17 +88,19 @@ public:
     mState(SCHEDULETABLE_STOPPED)
   {
   	mAction = new ScheduleTableAction[size];
+  	mNext = scheduleTableList;
+  	scheduleTableList = this;
   }
 
   /* Schedule a new action */
   void at(unsigned long offset, function action);
-  /* Look for action to perform */
-  void update();
   /* Start the schedule table periodic or one shot */
   void start(unsigned int howMuch = 0);
   /* Stop the schedule table */
   void stop();
   /* Print the whole schedule table for debugging purpose */
   void print();
+  
+  static void update();
 };
   
