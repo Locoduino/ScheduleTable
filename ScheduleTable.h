@@ -19,8 +19,8 @@ public:
   	function callback) :
   	mOffset(offset), mCallback(callback) {}
   
-  bool perform(unsigned long offsetDate) {
-    if (offsetDate >= mOffset) {
+  bool perform(unsigned long offsetDate, unsigned long period) {
+    if (offsetDate <= period && offsetDate >= mOffset) {
       if (mCallback) mCallback();
       return true;
     }
@@ -98,6 +98,8 @@ public:
   void start(unsigned int howMuch = 0);
   /* Stop the schedule table */
   void stop();
+  /* Set the period of the schedule table */
+  void setPeriod(unsigned int period);
   /* Print the whole schedule table for debugging purpose */
   void print();
   

@@ -1,7 +1,7 @@
 /*
  * More complex example of the use of the ScheduleTable library
  *
- * This example uses 2 ScheduleTable with 3 action each. 
+ * This example uses 2 ScheduleTable with 3 actions each. 
  * Each schedule table manages a traffic light.
  * 
  * Each traffic light has a 30s period.

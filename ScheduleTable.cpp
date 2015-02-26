@@ -44,14 +44,15 @@ void ScheduleTable::updateIt()
   if (mState != SCHEDULETABLE_STOPPED) {
     unsigned long currentDate = millis();
     unsigned long offsetDate = currentDate - mOrigin;
-    while (mCurrent < mSize && mAction[mCurrent].perform(offsetDate)) {
+    while (mCurrent < mSize &&
+           mAction[mCurrent].perform(offsetDate, mPeriod)) {
       mCurrent++;
     }
     if (mCurrent == mSize) {
       mCurrent = 0;
       if (mState == SCHEDULETABLE_PERIODIC_FOREVER ||
           (mState == SCHEDULETABLE_PERIODIC && --mHowMuch != 0)) {
-        mOrigin = currentDate;
+        mOrigin += mPeriod;
       }
       else {
         mState = SCHEDULETABLE_STOPPED;
@@ -75,7 +76,12 @@ void ScheduleTable::stop()
 {
   mState = SCHEDULETABLE_STOPPED;
 }
-  
+
+void ScheduleTable::setPeriod(unsigned int period)
+{
+  mPeriod = period * mTimeBase;
+}
+
 void ScheduleTable::print()
 {
   Serial.print('['); Serial.print(mSize); Serial.println("]");
