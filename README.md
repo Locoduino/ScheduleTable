@@ -4,7 +4,7 @@ A Schedule Table Library for Arduino
 
 A schedule table is a data structure to schedule actions along a timeline.
 A schedule table has a period and can process one or more actions.
-For instance one can depict a schedule table with period 32 as follow
+For instance one can depict a schedule table with period 500 as follow
 
 <img src="https://dl.dropboxusercontent.com/u/67740546/st.png">
 
