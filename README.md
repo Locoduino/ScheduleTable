@@ -14,7 +14,7 @@ Suppose you want to flash a LED every 500 ms, a first action, ON may be set
 at date 200 and a second one, OFF, may be set at date 250.
 
                     ON  OFF 
-                    |    |
+                    v    v
 |---------|---------|----|----|---------|---------|
 0        100       200       300       400       500
 
