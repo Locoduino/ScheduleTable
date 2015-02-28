@@ -18,18 +18,28 @@
 
 #include "ScheduleTable.h"
 
-ScheduleTableAction::ScheduleTableAction()
-{
-	mOffset = 0;
-	mCallback = NULL;
-}
-
-void ScheduleTableAction::print()
+void ScheduleTableActionSlot::print()
 {
   Serial.println(mOffset);
 }
 
 ScheduleTable *ScheduleTable::scheduleTableList = NULL;
+
+void ScheduleTable::insertAction(
+  unsigned long offset,
+  ScheduleTableAction *action)
+{
+  ScheduleTableActionSlot point(offset, action);
+  /* find its place in the table */
+  for (byte index = 0; index < mSize; index++) {
+    if (point < mAction[index]) {
+      ScheduleTableActionSlot tmp = mAction[index];
+      mAction[index] = point;
+      point = tmp;
+    }
+  }
+  mAction[mSize++] = point;
+}
 
 void ScheduleTable::at(
   unsigned long offset,
@@ -39,17 +49,21 @@ void ScheduleTable::at(
     /* compute the actual offset */
     offset *= mTimeBase;
     if (offset <= mPeriod) {
-		ScheduleTableAction point(offset, action);
-		/* find its place in the table */
-		for (byte index = 0; index < mSize; index++) {
-		  if (point < mAction[index]) {
-			ScheduleTableAction tmp = mAction[index];
-			mAction[index] = point;
-			point = tmp;
-		  }
-		}
-		mAction[mSize++] = point;
-	 }
+	  insertAction(offset, new FunctionCallAction(action));	
+    }
+  }
+}
+
+void ScheduleTable::at(
+  unsigned long offset,
+  ScheduleTableAction& action)
+{
+  if (mSize < mMaxSize) {
+    /* compute the actual offset */
+    offset *= mTimeBase;
+    if (offset <= mPeriod) {
+      insertAction(offset, &action);
+    }
   }
 }
 

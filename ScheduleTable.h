@@ -22,49 +22,67 @@ typedef void (*function)();
 
 class ScheduleTableAction
 {
-private:
-  unsigned long mOffset;
-  function mCallback;
-  
 public:
-  ScheduleTableAction();
+  /* action to be performed */
+  virtual void action() = 0;
+};
 
-  ScheduleTableAction(
-  	unsigned long offset,
-  	function callback) :
-  	mOffset(offset), mCallback(callback) {}
+class ScheduleTableActionSlot
+{
+private:
+  unsigned long       mOffset;
+  ScheduleTableAction *mAction;
+
+public:
+  ScheduleTableActionSlot() : mOffset(0), mAction(NULL) {}
+
+  ScheduleTableActionSlot(unsigned long offset, ScheduleTableAction *action) :
+  	mOffset(offset), mAction(action) {}
   
   bool perform(unsigned long offsetDate, unsigned long period) {
     if (offsetDate <= period && offsetDate >= mOffset) {
-      if (mCallback) mCallback();
+      mAction->action();
       return true;
     }
     return false;      
   }
   
-  ScheduleTableAction& operator=(const ScheduleTableAction& action) {
-  	mOffset = action.mOffset;
-  	mCallback = action.mCallback;
+  virtual ScheduleTableActionSlot& operator=(
+  	const ScheduleTableActionSlot& actionSlot)
+  {
+  	mOffset = actionSlot.mOffset;
+  	mAction = actionSlot.mAction;
   	return *this;
   }
   
-  bool operator<(const ScheduleTableAction& action) {
-  	return (mOffset < action.mOffset);
+  bool operator<(const ScheduleTableActionSlot& actionSlot) {
+  	return (mOffset < actionSlot.mOffset);
   }
 
-  bool operator<=(const ScheduleTableAction& action) {
-  	return (mOffset <= action.mOffset);
+  bool operator<=(const ScheduleTableActionSlot& actionSlot) {
+  	return (mOffset <= actionSlot.mOffset);
   }
 
-  bool operator>(const ScheduleTableAction& action) {
-  	return (mOffset > action.mOffset);
+  bool operator>(const ScheduleTableActionSlot& actionSlot) {
+  	return (mOffset > actionSlot.mOffset);
   }
 
-  bool operator>=(const ScheduleTableAction& action) {
-  	return (mOffset >= action.mOffset);
+  bool operator>=(const ScheduleTableActionSlot& actionSlot) {
+  	return (mOffset >= actionSlot.mOffset);
   }
-  
+    
   void print();
+};
+
+class FunctionCallAction : public ScheduleTableAction
+{
+private:
+  function mCallback;
+
+public:
+  FunctionCallAction(function callback) : mCallback(callback) {}
+  	
+  virtual void action() { if (mCallback) mCallback(); }
 };
 
 enum {
@@ -79,7 +97,7 @@ private:
   unsigned long mTimeBase;
   unsigned long mOrigin;
   unsigned long mPeriod;
-  ScheduleTableAction *mAction;
+  ScheduleTableActionSlot *mAction;
   unsigned int mHowMuch;
   byte mSize;
   byte mMaxSize;
@@ -91,6 +109,9 @@ private:
   
   /* Look for action to perform */
   void updateIt();
+  
+  /* insert an action in the table */
+  void insertAction(unsigned long offset, ScheduleTableAction *action);
 
 public:
   /* Constructor. Does the initialization of the Schedule Table */
@@ -102,13 +123,14 @@ public:
     mCurrent(0),
     mState(SCHEDULETABLE_STOPPED)
   {
-  	mAction = new ScheduleTableAction[size];
+  	mAction = new ScheduleTableActionSlot[size];
   	mNext = scheduleTableList;
   	scheduleTableList = this;
   }
 
   /* Schedule a new action */
   void at(unsigned long offset, function action);
+  void at(unsigned long offset, ScheduleTableAction& action);
   /* Start the schedule table periodic or one shot */
   void start(unsigned int howMuch = 0);
   /* Stop the schedule table */
