@@ -6,8 +6,7 @@ A schedule table is a data structure to schedule actions along a timeline.
 A schedule table has a period and can manage one or more actions.
 For instance one can depict a schedule table with period 500 as follow
 
-/---------/---------/---------/---------/---------/
-0        100       200       300       400       500
+<img src="https://dl.dropboxusercontent.com/u/67740546/st.png">
 
 Actions may be set a dates inside the schedule table.
 Suppose you want to flash a LED every 500 ms, a first action, ON may be set
