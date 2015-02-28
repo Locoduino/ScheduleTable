@@ -22,5 +22,5 @@ When the schedule table is executed action ON is triggered at 200 and OFF at
 250. When the date reaches 500, the schedule table restarts at 0, so ON is
 triggered again at date 700 and OFF at date 750 and so on.
 
-# Creating a schedule table
+## Creating a schedule table
 
