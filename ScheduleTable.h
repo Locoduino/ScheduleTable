@@ -16,6 +16,9 @@
  * THE SOFTWARE.
  */
  
+#ifndef __ScheduleTable_h__
+#define __ScheduleTable_h__
+
 #include "Arduino.h"
 
 typedef void (*function)();
@@ -143,3 +146,4 @@ public:
   static void update();
 };
   
+#endif
