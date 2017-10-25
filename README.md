@@ -6,13 +6,13 @@ A schedule table is a data structure to schedule actions along a timeline.
 A schedule table has a period and can process one or more actions.
 For instance one can depict a schedule table with period 500 as follow
 
-<img src="https://dl.dropboxusercontent.com/u/67740546/st.png">
+<img src="http://locoduino.org/pic/github/st.png">
 
 Actions may be set a dates inside the schedule table.
 Suppose you want to flash a LED every 500 ms, a first action, ON may be set
 at date 200 and a second one, OFF, may be set at date 250.
 
-<img src="https://dl.dropboxusercontent.com/u/67740546/sta.png">
+<img src="http://locoduino.org/pic/github/sta.png">
 
 When the schedule table is executed action ON is processed at 200 and OFF at
 250. When the date reaches 500, the schedule table restarts at 0, so ON is
@@ -74,7 +74,7 @@ blinkLED.at(200,ledOn);
 blinkLED.at(250,ledOff);
 ```
 
-##Starting a schedule table
+## Starting a schedule table
 
 A schedule table must be started to process the actions. This is done by
 calling the method start. Without any argument, the schedule table is started
@@ -91,7 +91,7 @@ or
 blinkLED.start(10); // starts blinkLED for 10 periods
 ```
 
-##Stopping a schedule table
+## Stopping a schedule table
 
 A schedule table may be stopped by calling the method stop
 
@@ -99,7 +99,7 @@ A schedule table may be stopped by calling the method stop
 blinkLED.stop(); // stop blinkLED
 ```
 
-##Setting the period
+## Setting the period
 
 The period of a schedule table may be changed during the execution of the
 application by calling the setPeriod method
@@ -111,7 +111,7 @@ blinkLED.setPeriod(1000); // change blinkLED period to 1000
 If a shorter period is used, action beyond the period are not processed
 anymore
 
-##Processing a schedule table
+## Processing a schedule table
 
 Schedule tables should be updated as fast as possible and at least every
 millisecond if you want to have the actions processed at a reasonably accurate
@@ -124,7 +124,7 @@ ScheduleTable::update()
 As a result the current date of all the schedule tables is updated and
 processing of action is done.
 
-##Full example
+## Full example
 
 Here is the full example of blinkLED
 
