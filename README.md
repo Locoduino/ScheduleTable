@@ -30,10 +30,10 @@ at the beginning of your sketch.
 ## Creating a schedule table
 
 To implement our LED behavior, we need a schedule table with 2 actions and a
-500ms period. This is done by using a ScheduleTable class instance :
+500ms period. This is done by using a SchedTable class instance :
 
 ```
-ScheduleTable blinkLED(2,500);
+SchedTable<2> blinkLED(500);
 ```
 
 By default the time base is in milliseconds. If a different timebase is needed,
@@ -42,7 +42,7 @@ declaration would set the timebase of the schedule table to 50ms so that
 period is now expressed in multiple of 50ms.
 
 ```
-ScheduleTable blinkLED(2,10,50);
+SchedTable<2> blinkLED(10,50);
 ```
 
 Each schedule table may have their own timebase.
@@ -131,7 +131,7 @@ Here is the full example of blinkLED
 ```
 #include <ScheduleTable.h>
 
-ScheduleTable blinkLED(2,500);
+SchedTable<2> blinkLED(500);
 
 void ledOn()
 {
@@ -145,10 +145,10 @@ void ledOff()
 
 void setup() {
   pinMode(13, OUTPUT);
-  
+
   blinkLED.at(200,ledOn);
   blinkLED.at(250,ledOff);
-  
+
   blinkLED.start();
 }
 

@@ -18,27 +18,41 @@
 
 #include "ScheduleTable.h"
 
+/*
+ * actions as object are only possible on high end Arduino, not on ATTiny
+ * because the later cannot do dynamic memory allocation
+ */
+#if !defined(ARDUINO_AVR_ATTINYX5) 
+
 void ScheduleTableActionSlot::print()
 {
   Serial.println(mOffset);
 }
 
+#endif
+
 ScheduleTable *ScheduleTable::scheduleTableList = NULL;
 
 void ScheduleTable::insertAction(
   unsigned long offset,
-  ScheduleTableAction *action)
+#ifndef SCHEDTABLE_RUNNING_LOW_END 
+  ScheduleTableAction *action
+#else
+	function						action
+#endif
+  )
 {
   ScheduleTableActionSlot point(offset, action);
+  ScheduleTableActionSlot *slots = storage();
   /* find its place in the table */
   for (byte index = 0; index < mSize; index++) {
-    if (point < mAction[index]) {
-      ScheduleTableActionSlot tmp = mAction[index];
-      mAction[index] = point;
+    if (point < slots[index]) {
+      ScheduleTableActionSlot tmp = slots[index];
+      slots[index] = point;
       point = tmp;
     }
   }
-  mAction[mSize++] = point;
+  slots[mSize++] = point;
 }
 
 void ScheduleTable::at(
@@ -49,11 +63,17 @@ void ScheduleTable::at(
     /* compute the actual offset */
     offset *= mTimeBase;
     if (offset <= mPeriod) {
-	  insertAction(offset, new FunctionCallAction(action));	
+    
+#ifndef SCHEDTABLE_RUNNING_LOW_END 
+      insertAction(offset, new FunctionCallAction(action));
+#else
+      insertAction(offset, action);
+#endif
     }
   }
 }
 
+#ifndef SCHEDTABLE_RUNNING_LOW_END 
 void ScheduleTable::at(
   unsigned long offset,
   ScheduleTableAction& action)
@@ -66,14 +86,17 @@ void ScheduleTable::at(
     }
   }
 }
+#endif
 
 void ScheduleTable::updateIt()
 {
   if (mState != SCHEDULETABLE_STOPPED) {
     unsigned long currentDate = millis();
     unsigned long offsetDate = currentDate - mOrigin;
+    ScheduleTableActionSlot *slots = storage();
+    
     while (mCurrent < mSize &&
-           mAction[mCurrent].perform(offsetDate, mPeriod)) {
+           slots[mCurrent].perform(offsetDate, mPeriod)) {
       mCurrent++;
     }
     if (mCurrent == mSize) {
@@ -113,8 +136,9 @@ void ScheduleTable::setPeriod(unsigned int period)
 void ScheduleTable::print()
 {
   Serial.print('['); Serial.print(mSize); Serial.println("]");
+  ScheduleTableActionSlot *slots = storage();
   for (byte index = 0; index < mSize; index++) {
-    mAction[index].print();
+    slots[index].print();
   }
 }
 

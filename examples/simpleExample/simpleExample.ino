@@ -8,13 +8,13 @@
  */
 
 #include <ScheduleTable.h>
- 
-ScheduleTable helloCycle(1,1000);
+
+SchedTable<1> helloCycle(1000);
 
 void hello()
 {
   static byte count = 0;
-  
+
   Serial.print(++count);
   Serial.print(" Hello it is ");
   Serial.println(millis());
@@ -23,10 +23,10 @@ void hello()
 void setup()
 {
   Serial.begin(9600);
-  
+
   /* the action is set à 1000ms from start of the period */
   helloCycle.at(1000,hello);
-  
+
   /* start the schedule table for 10 times */
   helloCycle.start(10);
 }

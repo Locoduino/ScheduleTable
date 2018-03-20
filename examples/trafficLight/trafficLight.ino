@@ -1,9 +1,9 @@
 /*
  * More complex example of the use of the ScheduleTable library
  *
- * This example uses 2 ScheduleTable with 3 actions each. 
+ * This example uses 2 ScheduleTable with 3 actions each.
  * Each schedule table manages a traffic light.
- * 
+ *
  * Each traffic light has a 30s period.
  * - Green light lasts for 13s
  * - Yellow light lasts for 2s
@@ -13,10 +13,10 @@
  */
 
 #include <ScheduleTable.h>
- 
+
 /* Both light cycle has 3 actions, lasts 30 time unit and has a 1000ms time base */
-ScheduleTable firstLightCycle(3,30,1000);
-ScheduleTable secondLightCycle(3,30,1000);
+SchedTable<3> firstLightCycle(30,1000);
+SchedTable<3> secondLightCycle(30,1000);
 
 struct trafficLight {
   byte greenPin;
@@ -56,8 +56,8 @@ void setup()
   pinMode(secondLight.greenPin,  OUTPUT);
   pinMode(secondLight.yellowPin, OUTPUT);
   pinMode(secondLight.redPin,    OUTPUT);
-  
-  /* Green at start for first light */ 
+
+  /* Green at start for first light */
   firstLightGreen();
   /* at 13s first light switches to yellow */
   firstLightCycle.at(13,firstLightYellow);
@@ -74,7 +74,7 @@ void setup()
   secondLightCycle.at(28,secondLightYellow);
   /* at 30s, it switches to red */
   secondLightCycle.at(30,secondLightRed);
-  
+
   /* starts both light forever */
   firstLightCycle.start();
   secondLightCycle.start();
@@ -85,4 +85,3 @@ void loop()
   /* update all the schedule tables at once */
   ScheduleTable::update();
 }
-
