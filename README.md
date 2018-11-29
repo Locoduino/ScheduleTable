@@ -1,4 +1,4 @@
-# ScheduleTable
+# ScheduleTable [![Build Status](https://travis-ci.org/Locoduino/ScheduleTable.svg?branch=master)](https://travis-ci.org/Locoduino/ScheduleTable)
 
 A Schedule Table Library for Arduino
 
@@ -158,3 +158,14 @@ void loop() {
 ```
 
 For more examples checks the examples directory.
+
+## Note about Travis CI
+
+The RingBuffer Library examples are built on Travis CI for the following boards:
+
+- Arduino Leonardo
+- Arduino Uno
+- Arduino Mega 2560
+- Arduino Zero
+- Arduino Due
+- ESP8266
