@@ -23,7 +23,7 @@ processed again at date 700 and OFF at date 750 and so on.
 To use the ScheduleTable library you have to import the library in the IDE
 or insert
 
-```
+```C++
 #include <ScheduleTable.h>
 ```
 
@@ -34,7 +34,7 @@ at the beginning of your sketch.
 To implement our LED behavior, we need a schedule table with 2 actions and a
 500ms period. This is done by using a SchedTable class instance :
 
-```
+```C++
 SchedTable<2> blinkLED(500);
 ```
 
@@ -43,7 +43,7 @@ a third argument may be used to set the timebase. For example the following
 declaration would set the timebase of the schedule table to 50ms so that
 period is now expressed in multiple of 50ms.
 
-```
+```C++
 SchedTable<2> blinkLED(10,50);
 ```
 
@@ -55,7 +55,7 @@ Actions are functions called by the schedule table. An action is a function
 that returns nothing and has no argument. Let's define 2 actions for our led,
 ledOn and ledOff:
 
-```
+```C++
 void ledOn()
 {
   digitalWrite(13, HIGH);
@@ -70,7 +70,7 @@ void ledOff()
 These actions are now added to the schedule table. This is done in the setup
 function along with a pinMode to set digital I/O 13 in OUTPUT.
 
-```
+```C++
 pinMode(13, OUTPUT);
 blinkLED.at(200,ledOn);
 blinkLED.at(250,ledOff);
@@ -83,13 +83,13 @@ calling the method start. Without any argument, the schedule table is started
 for an infinite number of periods. For a fixed number of period, this number
 is given as argument.
 
-```
+```C++
 blinkLED.start(); // starts blinkLED for an infinite number of period
 ```
 
 or
 
-```
+```C++
 blinkLED.start(10); // starts blinkLED for 10 periods
 ```
 
@@ -97,7 +97,7 @@ blinkLED.start(10); // starts blinkLED for 10 periods
 
 A schedule table may be stopped by calling the method stop
 
-```
+```C++
 blinkLED.stop(); // stop blinkLED
 ```
 
@@ -106,7 +106,7 @@ blinkLED.stop(); // stop blinkLED
 The period of a schedule table may be changed during the execution of the
 application by calling the setPeriod method
 
-```
+```C++
 blinkLED.setPeriod(1000); // change blinkLED period to 1000
 ```
 
@@ -119,7 +119,7 @@ Schedule tables should be updated as fast as possible and at least every
 millisecond if you want to have the actions processed at a reasonably accurate
 date. This is done by calling the class method update in loop.
 
-```
+```C++
 ScheduleTable::update()
 ```
 
@@ -130,7 +130,7 @@ processing of action is done.
 
 Here is the full example of blinkLED
 
-```
+```C++
 #include <ScheduleTable.h>
 
 SchedTable<2> blinkLED(500);
@@ -163,11 +163,10 @@ For more examples checks the examples directory.
 
 ## Note about Travis CI
 
-The RingBuffer Library examples are built on Travis CI for the following boards:
+The ScheduleTable Library examples are built on Travis CI for the following boards:
 
 - Arduino Leonardo
 - Arduino Uno
 - Arduino Mega 2560
 - Arduino Zero
 - Arduino Due
-- ESP8266
