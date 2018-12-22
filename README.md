@@ -1,4 +1,6 @@
-# ScheduleTable [![Build Status](https://travis-ci.org/Locoduino/ScheduleTable.svg?branch=master)](https://travis-ci.org/Locoduino/ScheduleTable)
+[![GitHub release](https://img.shields.io/github/release/Locoduino/ScheduleTable.svg)](https://github.com/Locoduino/ScheduleTable/releases/latest) [![GitHub commits](https://img.shields.io/github/commits-since/Locoduino/ScheduleTable/1.3.svg)](https://github.com/Locoduino/ScheduleTable/compare/1.3...master) [![Build Status](https://travis-ci.org/Locoduino/ScheduleTable.svg?branch=master)](https://travis-ci.org/Locoduino/ScheduleTable)
+
+# ScheduleTable 
 
 A Schedule Table Library for Arduino
 
