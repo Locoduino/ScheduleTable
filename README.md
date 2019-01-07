@@ -1,6 +1,6 @@
 [![GitHub release](https://img.shields.io/github/release/Locoduino/ScheduleTable.svg)](https://github.com/Locoduino/ScheduleTable/releases/latest) [![GitHub commits](https://img.shields.io/github/commits-since/Locoduino/ScheduleTable/1.3.svg)](https://github.com/Locoduino/ScheduleTable/compare/1.3...master) [![Build Status](https://travis-ci.org/Locoduino/ScheduleTable.svg?branch=master)](https://travis-ci.org/Locoduino/ScheduleTable)
 
-# ScheduleTable 
+# ScheduleTable
 
 A Schedule Table Library for Arduino
 
@@ -112,6 +112,28 @@ blinkLED.setPeriod(1000); // change blinkLED period to 1000
 
 If a shorter period is used, action beyond the period are not processed
 anymore
+
+## Removing actions
+
+Actions can be removed by using the removeAt method on a stopped schedule table.
+If called on a running schedule table, this method has no effect.
+This method takes the date as argument. If there is no action at the given date,
+removeAt has no effect. If there is more than one action at the given date, they
+are all removed.
+
+```C++
+myScheduleTable.removeAt(300);
+```
+
+removes the action(s) standing at date 300.
+
+## Emptying a schedule
+
+All action can be removed by using the empty method.
+
+```C++
+myScheduleTable.empty();
+```
 
 ## Processing a schedule table
 

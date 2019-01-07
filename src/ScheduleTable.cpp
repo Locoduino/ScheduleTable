@@ -1,6 +1,6 @@
 /*
  * Schedule tables for Arduino
- * 
+ *
  * Copyright Jean-Luc Béchennec 2015
  *
  *  This software is distributed under the GNU Public Licence v2 (GPLv2)
@@ -22,11 +22,23 @@
  * actions as object are only possible on high end Arduino, not on ATTiny
  * because the later cannot do dynamic memory allocation
  */
-#if !defined(ARDUINO_AVR_ATTINYX5) 
+#if !defined(ARDUINO_AVR_ATTINYX5)
 
 void ScheduleTableActionSlot::print()
 {
-  Serial.println(mOffset);
+  Serial.print(mOffset);
+  Serial.print(':');
+#ifndef SCHEDTABLE_RUNNING_LOW_END
+  if (mAction->hasBeenAllocatedByScheduleTable()) {
+    Serial.print(F("+("));
+  }
+#endif
+  Serial.print((uint32_t)mAction);
+#ifndef SCHEDTABLE_RUNNING_LOW_END
+  if (mAction->hasBeenAllocatedByScheduleTable()) {
+    Serial.print(')');
+  }
+#endif
 }
 
 #endif
@@ -34,18 +46,18 @@ void ScheduleTableActionSlot::print()
 ScheduleTable *ScheduleTable::scheduleTableList = NULL;
 
 void ScheduleTable::insertAction(
-  unsigned long offset,
-#ifndef SCHEDTABLE_RUNNING_LOW_END 
+  uint32_t offset,
+#ifndef SCHEDTABLE_RUNNING_LOW_END
   ScheduleTableAction *action
 #else
-	function						action
+  function            action
 #endif
   )
 {
   ScheduleTableActionSlot point(offset, action);
   ScheduleTableActionSlot *slots = storage();
   /* find its place in the table */
-  for (byte index = 0; index < mSize; index++) {
+  for (uint8_t index = 0; index < mSize; index++) {
     if (point < slots[index]) {
       ScheduleTableActionSlot tmp = slots[index];
       slots[index] = point;
@@ -56,16 +68,18 @@ void ScheduleTable::insertAction(
 }
 
 void ScheduleTable::at(
-  unsigned long offset,
+  uint32_t offset,
   function action)
 {
   if (mSize < mMaxSize) {
     /* compute the actual offset */
     offset *= mTimeBase;
     if (offset <= mPeriod) {
-    
-#ifndef SCHEDTABLE_RUNNING_LOW_END 
-      insertAction(offset, new FunctionCallAction(action));
+
+#ifndef SCHEDTABLE_RUNNING_LOW_END
+      FunctionCallAction *wrappedAction = new FunctionCallAction(action);
+      wrappedAction->mHasBeenAllocatedByScheduleTable = true;
+      insertAction(offset, wrappedAction);
 #else
       insertAction(offset, action);
 #endif
@@ -73,9 +87,9 @@ void ScheduleTable::at(
   }
 }
 
-#ifndef SCHEDTABLE_RUNNING_LOW_END 
+#ifndef SCHEDTABLE_RUNNING_LOW_END
 void ScheduleTable::at(
-  unsigned long offset,
+  uint32_t offset,
   ScheduleTableAction& action)
 {
   if (mSize < mMaxSize) {
@@ -91,10 +105,10 @@ void ScheduleTable::at(
 void ScheduleTable::updateIt()
 {
   if (mState != SCHEDULETABLE_STOPPED) {
-    unsigned long currentDate = millis();
-    unsigned long offsetDate = currentDate - mOrigin;
+    uint32_t currentDate = millis();
+    uint32_t offsetDate = currentDate - mOrigin;
     ScheduleTableActionSlot *slots = storage();
-    
+
     while (mCurrent < mSize &&
            slots[mCurrent].perform(offsetDate, mPeriod)) {
       mCurrent++;
@@ -108,7 +122,7 @@ void ScheduleTable::updateIt()
       else {
         mState = SCHEDULETABLE_STOPPED;
       }
-    } 
+    }
   }
 }
 
@@ -133,13 +147,52 @@ void ScheduleTable::setPeriod(unsigned int period)
   mPeriod = period * mTimeBase;
 }
 
+/*
+ * Remove all the actions from the schedule table
+ */
+void ScheduleTable::empty()
+{
+  ScheduleTableActionSlot *slots = storage();
+  for (uint8_t index = 0; index < mSize; index++) {
+    if (slots[index].mAction->hasBeenAllocatedByScheduleTable()) {
+      delete slots[index].mAction;
+    }
+  }
+  mSize = 0;
+}
+
+/*
+ * Remove an action according to its date. If the Schedule Table is not
+ * stopped or if the date does not exist, removeAt has no effect
+ */
+void ScheduleTable::removeAt(const uint32_t inDate)
+{
+  if (mState == SCHEDULETABLE_STOPPED) {
+    ScheduleTableActionSlot *slots = storage();
+    for (uint8_t index = 0; index < mSize; index++) {
+      if (slots[index].mOffset == inDate) {
+        if (slots[index].mAction->hasBeenAllocatedByScheduleTable()) {
+          delete slots[index].mAction;
+        }
+        for (uint8_t s = index; s < (mSize - 1); s++) {
+          slots[s] = slots[s + 1];
+        }
+        index--;
+        mSize--;
+      }
+    }
+  }
+}
+
 void ScheduleTable::print()
 {
-  Serial.print('['); Serial.print(mSize); Serial.println("]");
+  Serial.print('['); Serial.print(mSize); Serial.print("] ");
   ScheduleTableActionSlot *slots = storage();
-  for (byte index = 0; index < mSize; index++) {
+  for (uint8_t index = 0; index < mSize; index++) {
     slots[index].print();
+    Serial.print(' ');
   }
+  Serial.println();
 }
 
 void ScheduleTable::update()

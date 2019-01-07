@@ -35,17 +35,29 @@ typedef void (*function)();
 
 class ScheduleTableAction
 {
+  friend class ScheduleTable;
+private:
+  bool mHasBeenAllocatedByScheduleTable = false;
 public:
+  bool hasBeenAllocatedByScheduleTable() {
+    return mHasBeenAllocatedByScheduleTable;
+  }
   /* action to be performed */
   virtual void action() = 0;
+
+  virtual ~ScheduleTableAction() {
+    Serial.print(F("Delete: "));
+    Serial.println((uint32_t)this);
+  }
 };
 
 #endif
 
 class ScheduleTableActionSlot
 {
+  friend class ScheduleTable;
 private:
-  unsigned long       mOffset;
+  uint32_t       mOffset;
 
 #ifndef SCHEDTABLE_RUNNING_LOW_END
   ScheduleTableAction *mAction;
@@ -57,14 +69,14 @@ public:
   ScheduleTableActionSlot() : mOffset(0), mAction(NULL) {}
 
 #ifndef SCHEDTABLE_RUNNING_LOW_END
-  ScheduleTableActionSlot(unsigned long offset, ScheduleTableAction *action) :
+  ScheduleTableActionSlot(uint32_t offset, ScheduleTableAction *action) :
   	mOffset(offset), mAction(action) {}
 #else
-  ScheduleTableActionSlot(unsigned long offset, function action) :
+  ScheduleTableActionSlot(uint32_t offset, function action) :
   	mOffset(offset), mAction(action) {}
 #endif
 
-  bool perform(unsigned long offsetDate, unsigned long period) {
+  bool perform(uint32_t offsetDate, uint32_t period) {
     if (offsetDate <= period && offsetDate >= mOffset) {
 #ifndef SCHEDTABLE_RUNNING_LOW_END
       mAction->action();
@@ -125,9 +137,9 @@ enum {
 class ScheduleTable
 {
 private:
-  unsigned long mTimeBase;
-  unsigned long mOrigin;
-  unsigned long mPeriod;
+  uint32_t mTimeBase;
+  uint32_t mOrigin;
+  uint32_t mPeriod;
   unsigned int mHowMuch;
   byte mSize;
   byte mMaxSize;
@@ -142,17 +154,21 @@ private:
 
   /* insert an action in the table */
 #ifndef SCHEDTABLE_RUNNING_LOW_END
-  void insertAction(unsigned long offset, ScheduleTableAction *action);
+  void insertAction(uint32_t offset, ScheduleTableAction *action);
 #else
-  void insertAction(unsigned long offset, function action);
+  void insertAction(uint32_t offset, function action);
 #endif
 
   /* get the storage, redefined by inheriting template */
   virtual ScheduleTableActionSlot *storage();
 
+  /* Prevent copy */
+  ScheduleTable(const ScheduleTable &inScheduleTable);
+  ScheduleTable& operator=(const ScheduleTable &inScheduleTable);
+
 public:
   /* Constructor. Does the initialization of the Schedule Table */
-  ScheduleTable(uint8_t size, unsigned long period, unsigned long timeBase) :
+  ScheduleTable(uint8_t size, uint32_t period, uint32_t timeBase) :
     mTimeBase(timeBase),
     mPeriod(period * timeBase),
     mSize(0),
@@ -165,10 +181,10 @@ public:
   }
 
   /* Schedule a new action */
-  void at(unsigned long offset, function action);
+  void at(uint32_t offset, function action);
 
 #ifndef SCHEDTABLE_RUNNING_LOW_END
-  void at(unsigned long offset, ScheduleTableAction& action);
+  void at(uint32_t offset, ScheduleTableAction& action);
 #endif
 
   /* Start the schedule table periodic or one shot */
@@ -177,20 +193,27 @@ public:
   void stop();
   /* Set the period of the schedule table */
   void setPeriod(unsigned int period);
+  /* Remove all the actions from the schedule table */
+  void empty();
+  /*
+   * Remove an action according to its date. If the Schedule Table is not
+   * stopped or if the date does not exist, removeAt has no effect
+   */
+  void removeAt(const uint32_t inDate);
   /* Print the whole schedule table for debugging purpose */
   void print();
 
   static void update();
 };
 
-
 template<uint8_t SIZE> class SchedTable : public ScheduleTable
 {
 public:
-  SchedTable(unsigned long period, unsigned long timeBase = 1) :
+  SchedTable(uint32_t period, uint32_t timeBase = 1) :
     ScheduleTable(SIZE, period, timeBase)
   {
   }
+
 private:
   ScheduleTableActionSlot mAction[SIZE];
 
