@@ -10,7 +10,7 @@ For instance one can depict a schedule table with period 500 as follow
 
 <img src="http://locoduino.org/pic/github/st.png">
 
-Actions may be set a dates inside the schedule table.
+Actions may be set at dates inside the schedule table.
 Suppose you want to flash a LED every 500 ms, a first action, ON may be set
 at date 200 and a second one, OFF, may be set at date 250.
 
