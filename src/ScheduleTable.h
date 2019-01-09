@@ -1,9 +1,9 @@
 /*
  * Schedule tables for Arduino
  *
- * Copyright Jean-Luc Béchennec 2015
+ * Copyright Jean-Luc Béchennec 2015-2019
  *
- *  This software is distributed under the GNU Public Licence v2 (GPLv2)
+ * This software is distributed under the GNU Public Licence v2 (GPLv2)
  *
  * Please read the LICENCE file
  *
@@ -16,124 +16,105 @@
  * THE SOFTWARE.
  */
 
-#ifndef __ScheduleTable_h__
-#define __ScheduleTable_h__
+#ifndef __SCHEDULETABLE_H__
+#define __SCHEDULETABLE_H__
 
 #include "Arduino.h"
 
-#if defined(ARDUINO_AVR_ATTINYX5) || defined(ARDUINO_AVR_ATTINYX4)
-#define SCHEDTABLE_RUNNING_LOW_END
-#endif
-
 typedef void (*function)();
 
-/*
- * actions as object are only possible on high end Arduino, not on ATTiny
- * because the later cannot do dynamic memory allocation
+/*--------------------------------------------------------------------------------------------------
+ * ScheduleTableAction is an abstract class
+ * for actions put in schedule tables
  */
-#ifndef SCHEDTABLE_RUNNING_LOW_END
-
 class ScheduleTableAction
 {
-  friend class ScheduleTable;
-private:
-  bool mHasBeenAllocatedByScheduleTable = false;
 public:
-  bool hasBeenAllocatedByScheduleTable() {
-    return mHasBeenAllocatedByScheduleTable;
-  }
   /* action to be performed */
   virtual void action() = 0;
-
-  virtual ~ScheduleTableAction() {
-    Serial.print(F("Delete: "));
-    Serial.println((uint32_t)this);
-  }
 };
 
-#endif
-
+/*--------------------------------------------------------------------------------------------------
+ * ScheduleTableActionSlot is a slot in the schedule table.
+ * It encapsulates an action, its date (mOffset) and a boolean
+ * which specify whether the action is a simple function call
+ * or an object
+ */
 class ScheduleTableActionSlot
 {
-  friend class ScheduleTable;
 private:
-  uint32_t       mOffset;
-
-#ifndef SCHEDTABLE_RUNNING_LOW_END
-  ScheduleTableAction *mAction;
-#else
-	function            mAction;
-#endif
+  bool      mIsFunction:1;
+  uint32_t  mOffset:31;
+  void      *mAction;
 
 public:
-  ScheduleTableActionSlot() : mOffset(0), mAction(NULL) {}
-
-#ifndef SCHEDTABLE_RUNNING_LOW_END
-  ScheduleTableActionSlot(uint32_t offset, ScheduleTableAction *action) :
-  	mOffset(offset), mAction(action) {}
-#else
-  ScheduleTableActionSlot(uint32_t offset, function action) :
-  	mOffset(offset), mAction(action) {}
-#endif
-
+  /* Empty slot constructor */
+  ScheduleTableActionSlot() : mIsFunction(false), mOffset(0), mAction(NULL) {}
+  /* Slot constructor */
+  ScheduleTableActionSlot(
+    const uint32_t      inOffset,
+    const void * const  inAction,
+    const bool          inIsFunction
+  ) : mIsFunction(inIsFunction), mOffset(inOffset), mAction(inAction) {}
+  /*
+   * perform the action if the date arrived. Return true if the action
+   * has been performed, false otherwise.
+   */
   bool perform(uint32_t offsetDate, uint32_t period) {
     if (offsetDate <= period && offsetDate >= mOffset) {
-#ifndef SCHEDTABLE_RUNNING_LOW_END
-      mAction->action();
-#else
-	    mAction();
-#endif
+      if (mIsFunction) {
+        ((function)mAction)();
+      }
+      else {
+        ((ScheduleTableAction *)mAction)->action();
+      }
       return true;
     }
     return false;
   }
-
+  /* copy operator */
   virtual ScheduleTableActionSlot& operator=(
   	const ScheduleTableActionSlot& actionSlot)
   {
-  	mOffset = actionSlot.mOffset;
+    mIsFunction = actionSlot.mIsFunction;
+    mOffset = actionSlot.mOffset;
   	mAction = actionSlot.mAction;
   	return *this;
   }
-
+  /* comparison < operator, the comparison is made on the dates  */
   bool operator<(const ScheduleTableActionSlot& actionSlot) {
   	return (mOffset < actionSlot.mOffset);
   }
-
+  /* comparison <= operator, the comparison is made on the dates  */
   bool operator<=(const ScheduleTableActionSlot& actionSlot) {
   	return (mOffset <= actionSlot.mOffset);
   }
-
+  /* comparison > operator, the comparison is made on the dates  */
   bool operator>(const ScheduleTableActionSlot& actionSlot) {
   	return (mOffset > actionSlot.mOffset);
   }
-
+  /* comparison >= operator, the comparison is made on the dates  */
   bool operator>=(const ScheduleTableActionSlot& actionSlot) {
   	return (mOffset >= actionSlot.mOffset);
   }
-
+  /* return the offset */
+  uint32_t offset() { return mOffset; }
+  /* print the slot for debug purpose */
   void print();
 };
 
-#ifndef SCHEDTABLE_RUNNING_LOW_END
-class FunctionCallAction : public ScheduleTableAction
-{
-private:
-  function mCallback;
-
-public:
-  FunctionCallAction(function callback) : mCallback(callback) {}
-
-  virtual void action() { if (mCallback) mCallback(); }
-};
-#endif
-
+/*--------------------------------------------------------------------------------------------------
+ * States of a schedule table
+ */
 enum {
-  SCHEDULETABLE_STOPPED,
-  SCHEDULETABLE_PERIODIC,
-  SCHEDULETABLE_PERIODIC_FOREVER
+  SCHEDULETABLE_STOPPED,          /* stopped schedule table, initial state */
+  SCHEDULETABLE_PERIODIC,         /* running schedule table for a number of period */
+  SCHEDULETABLE_PERIODIC_FOREVER  /* running schedule table for for an infinite number of periods */
 };
 
+/*--------------------------------------------------------------------------------------------------
+ * ScheduleTable class
+ */
 class ScheduleTable
 {
 private:
@@ -153,11 +134,9 @@ private:
   void updateIt();
 
   /* insert an action in the table */
-#ifndef SCHEDTABLE_RUNNING_LOW_END
-  void insertAction(uint32_t offset, ScheduleTableAction *action);
-#else
-  void insertAction(uint32_t offset, function action);
-#endif
+  void insert(const uint32_t inOffset, const void * const inAction, const bool inIsFunction);
+  void insertAction(const uint32_t offset, const ScheduleTableAction *action);
+  void insertAction(const uint32_t offset, const function action);
 
   /* get the storage, redefined by inheriting template */
   virtual ScheduleTableActionSlot *storage();
@@ -182,10 +161,7 @@ public:
 
   /* Schedule a new action */
   void at(uint32_t offset, function action);
-
-#ifndef SCHEDTABLE_RUNNING_LOW_END
   void at(uint32_t offset, ScheduleTableAction& action);
-#endif
 
   /* Start the schedule table periodic or one shot */
   void start(unsigned int howMuch = 0);
@@ -202,10 +178,13 @@ public:
   void removeAt(const uint32_t inDate);
   /* Print the whole schedule table for debugging purpose */
   void print();
-
+  /* Update all schedule tables */
   static void update();
 };
 
+/*--------------------------------------------------------------------------------------------------
+ * ScheduleTable template
+ */
 template<uint8_t SIZE> class SchedTable : public ScheduleTable
 {
 public:

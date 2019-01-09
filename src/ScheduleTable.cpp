@@ -18,43 +18,27 @@
 
 #include "ScheduleTable.h"
 
-/*
- * actions as object are only possible on high end Arduino, not on ATTiny
- * because the later cannot do dynamic memory allocation
- */
-#if !defined(ARDUINO_AVR_ATTINYX5)
-
 void ScheduleTableActionSlot::print()
 {
   Serial.print(mOffset);
   Serial.print(':');
-#ifndef SCHEDTABLE_RUNNING_LOW_END
-  if (mAction->hasBeenAllocatedByScheduleTable()) {
-    Serial.print(F("+("));
+  if (mIsFunction) {
+    Serial.print(F("f("));
   }
-#endif
   Serial.print((uint32_t)mAction);
-#ifndef SCHEDTABLE_RUNNING_LOW_END
-  if (mAction->hasBeenAllocatedByScheduleTable()) {
+  if (mIsFunction) {
     Serial.print(')');
   }
-#endif
 }
-
-#endif
 
 ScheduleTable *ScheduleTable::scheduleTableList = NULL;
 
-void ScheduleTable::insertAction(
-  uint32_t offset,
-#ifndef SCHEDTABLE_RUNNING_LOW_END
-  ScheduleTableAction *action
-#else
-  function            action
-#endif
-  )
+void ScheduleTable::insert(
+  const uint32_t      inOffset,
+  const void * const  inAction,
+  const bool          inIsFunction)
 {
-  ScheduleTableActionSlot point(offset, action);
+  ScheduleTableActionSlot point(inOffset, inAction, inIsFunction);
   ScheduleTableActionSlot *slots = storage();
   /* find its place in the table */
   for (uint8_t index = 0; index < mSize; index++) {
@@ -67,6 +51,20 @@ void ScheduleTable::insertAction(
   slots[mSize++] = point;
 }
 
+void ScheduleTable::insertAction(
+  const uint32_t            inOffset,
+  const ScheduleTableAction *inAction)
+{
+  insert(inOffset, inAction, false);
+}
+
+void ScheduleTable::insertAction(
+  const uint32_t            inOffset,
+  const function            inAction)
+{
+  insert(inOffset, inAction, true);
+}
+
 void ScheduleTable::at(
   uint32_t offset,
   function action)
@@ -75,19 +73,11 @@ void ScheduleTable::at(
     /* compute the actual offset */
     offset *= mTimeBase;
     if (offset <= mPeriod) {
-
-#ifndef SCHEDTABLE_RUNNING_LOW_END
-      FunctionCallAction *wrappedAction = new FunctionCallAction(action);
-      wrappedAction->mHasBeenAllocatedByScheduleTable = true;
-      insertAction(offset, wrappedAction);
-#else
       insertAction(offset, action);
-#endif
     }
   }
 }
 
-#ifndef SCHEDTABLE_RUNNING_LOW_END
 void ScheduleTable::at(
   uint32_t offset,
   ScheduleTableAction& action)
@@ -100,7 +90,6 @@ void ScheduleTable::at(
     }
   }
 }
-#endif
 
 void ScheduleTable::updateIt()
 {
@@ -152,12 +141,6 @@ void ScheduleTable::setPeriod(unsigned int period)
  */
 void ScheduleTable::empty()
 {
-  ScheduleTableActionSlot *slots = storage();
-  for (uint8_t index = 0; index < mSize; index++) {
-    if (slots[index].mAction->hasBeenAllocatedByScheduleTable()) {
-      delete slots[index].mAction;
-    }
-  }
   mSize = 0;
 }
 
@@ -170,10 +153,7 @@ void ScheduleTable::removeAt(const uint32_t inDate)
   if (mState == SCHEDULETABLE_STOPPED) {
     ScheduleTableActionSlot *slots = storage();
     for (uint8_t index = 0; index < mSize; index++) {
-      if (slots[index].mOffset == inDate) {
-        if (slots[index].mAction->hasBeenAllocatedByScheduleTable()) {
-          delete slots[index].mAction;
-        }
+      if (slots[index].offset() == inDate) {
         for (uint8_t s = index; s < (mSize - 1); s++) {
           slots[s] = slots[s + 1];
         }

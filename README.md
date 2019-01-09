@@ -127,9 +127,9 @@ myScheduleTable.removeAt(300);
 
 removes the action(s) standing at date 300.
 
-## Emptying a schedule
+## Emptying a schedule table
 
-All action can be removed by using the empty method.
+All actions can be removed by using the empty method.
 
 ```C++
 myScheduleTable.empty();
