@@ -34,9 +34,9 @@ void ScheduleTableActionSlot::print()
 ScheduleTable *ScheduleTable::scheduleTableList = NULL;
 
 void ScheduleTable::insert(
-  const uint32_t      inOffset,
-  const void * const  inAction,
-  const bool          inIsFunction)
+  const uint32_t  inOffset,
+  void            *inAction,
+  const bool      inIsFunction)
 {
   ScheduleTableActionSlot point(inOffset, inAction, inIsFunction);
   ScheduleTableActionSlot *slots = storage();
@@ -52,17 +52,17 @@ void ScheduleTable::insert(
 }
 
 void ScheduleTable::insertAction(
-  const uint32_t            inOffset,
-  const ScheduleTableAction *inAction)
+  const uint32_t      inOffset,
+  ScheduleTableAction *inAction)
 {
   insert(inOffset, inAction, false);
 }
 
 void ScheduleTable::insertAction(
-  const uint32_t            inOffset,
-  const function            inAction)
+  const uint32_t  inOffset,
+  function        inAction)
 {
-  insert(inOffset, inAction, true);
+  insert(inOffset, (void *) inAction, true);
 }
 
 void ScheduleTable::at(

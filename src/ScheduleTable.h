@@ -52,9 +52,9 @@ public:
   ScheduleTableActionSlot() : mIsFunction(false), mOffset(0), mAction(NULL) {}
   /* Slot constructor */
   ScheduleTableActionSlot(
-    const uint32_t      inOffset,
-    void * const        inAction,
-    const bool          inIsFunction
+    const uint32_t  inOffset,
+    void            *inAction,
+    const bool      inIsFunction
   ) : mIsFunction(inIsFunction), mOffset(inOffset), mAction(inAction) {}
   /*
    * perform the action if the date arrived. Return true if the action
@@ -134,9 +134,9 @@ private:
   void updateIt();
 
   /* insert an action in the table */
-  void insert(const uint32_t inOffset, const void * const inAction, const bool inIsFunction);
-  void insertAction(const uint32_t offset, const ScheduleTableAction *action);
-  void insertAction(const uint32_t offset, const function action);
+  void insert(const uint32_t inOffset, void *inAction, const bool inIsFunction);
+  void insertAction(const uint32_t offset, ScheduleTableAction *action);
+  void insertAction(const uint32_t offset, function action);
 
   /* get the storage, redefined by inheriting template */
   virtual ScheduleTableActionSlot *storage();
