@@ -53,7 +53,7 @@ public:
   /* Slot constructor */
   ScheduleTableActionSlot(
     const uint32_t      inOffset,
-    void  const         *inAction,
+    void * const        inAction,
     const bool          inIsFunction
   ) : mIsFunction(inIsFunction), mOffset(inOffset), mAction(inAction) {}
   /*
