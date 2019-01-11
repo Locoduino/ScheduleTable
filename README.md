@@ -6,7 +6,7 @@ A Schedule Table Library for Arduino
 
 ## Changelog
 
-- 1.4     Added ```empty()```, and ```removeAt()```` methods. Objects are usable on ATTiny. No more memory
+- 1.4     Added ```empty()```, and ```removeAt()``` methods. Objects are usable on ATTiny. No more memory
         allocation.
 - 1.3     Use template for schedule table size. This prevents dynamic memory
         allocation and allows to use schedule tables on ATTiny.
