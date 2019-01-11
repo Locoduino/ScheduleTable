@@ -1,4 +1,4 @@
-[![GitHub release](https://img.shields.io/github/release/Locoduino/ScheduleTable.svg)](https://github.com/Locoduino/ScheduleTable/releases/latest) [![GitHub commits](https://img.shields.io/github/commits-since/Locoduino/ScheduleTable/1.3.svg)](https://github.com/Locoduino/ScheduleTable/compare/1.3...master) [![Build Status](https://travis-ci.org/Locoduino/ScheduleTable.svg?branch=master)](https://travis-ci.org/Locoduino/ScheduleTable)
+[![GitHub release](https://img.shields.io/github/release/Locoduino/ScheduleTable.svg)](https://github.com/Locoduino/ScheduleTable/releases/latest) [![GitHub commits](https://img.shields.io/github/commits-since/Locoduino/ScheduleTable/1.4.svg)](https://github.com/Locoduino/ScheduleTable/compare/1.4...master) [![Build Status](https://travis-ci.org/Locoduino/ScheduleTable.svg?branch=master)](https://travis-ci.org/Locoduino/ScheduleTable)
 
 # ScheduleTable
 
@@ -6,11 +6,11 @@ A Schedule Table Library for Arduino
 
 ## Changelog
 
-- 1.4     Added ```empty()```, and ```removeAt()```` methods. Objects are usable on ATTiny. No more memory
-        allocation.
-- 1.3     Use template for schedule table size. This prevents dynamic memory
+- **1.4**     Added ```empty()```, and ```removeAt()``` methods. Objects are usable on ATTiny. No more memory
+        allocation. Added an example with C++ closures.
+- **1.3**     Use template for schedule table size. This prevents dynamic memory.
         allocation and allows to use schedule tables on ATTiny.
-- 1.2     Initial release.
+- **1.2**     Initial release.
 
 ## Description
 
