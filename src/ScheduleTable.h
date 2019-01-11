@@ -188,8 +188,14 @@ public:
 /*--------------------------------------------------------------------------------------------------
  * ScheduleTable template
  */
-template<uint8_t SIZE> class SchedTable : public ScheduleTable
+template<size_t SIZE> class SchedTable : public ScheduleTable
 {
+  /* Check the size is lower than 256, emit an error otherwise */
+  static_assert(SIZE < 256, "Schedule table with size greater than 255 are forbidden");
+
+  /* Check the size is not 0, emit an error otherwise */
+  static_assert(SIZE != 0, "Schedule table with zero size are forbidden");
+
 public:
   SchedTable(uint32_t period, uint32_t timeBase = 1) :
     ScheduleTable(SIZE, period, timeBase)

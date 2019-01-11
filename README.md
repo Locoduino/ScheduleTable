@@ -6,11 +6,8 @@ A Schedule Table Library for Arduino
 
 ## Changelog
 
-- **1.4**     Added ```empty()```, and ```removeAt()``` methods. Objects are usable on ATTiny. No more memory
-        allocation. Added an example with C++ closures.
-- **1.3**     Use template for schedule table size. This prevents dynamic memory.
-
-        allocation and allows to use schedule tables on ATTiny.
+- **1.4**     Added ```empty()```, and ```removeAt()``` methods. Objects are usable on ATTiny. No more memory allocation. Added an example with C++ closures.
+- **1.3**     Use template for schedule table size. This prevents dynamic memory allocation and allows to use schedule tables on ATTiny.
 - **1.2**     Initial release.
 
 ## Description
@@ -40,7 +37,7 @@ or insert
 
 at the beginning of your sketch.
 
-## Creating a schedule table
+### Creating a schedule table
 
 To implement our LED behavior, we need a schedule table with 2 actions and a
 500ms period. This is done by using a SchedTable class instance :
@@ -60,7 +57,11 @@ SchedTable<2> blinkLED(10,50);
 
 Each schedule table may have their own timebase.
 
-## Adding actions
+A Schedule Table cannot handle more than 255 actions.
+
+The period cannot be greater than 2<sup>31</sup>-1 divided by the timebase. This allows to up to more than 2 billions of milliseconds, that is 24 days.
+
+### Adding actions
 
 Actions are functions called by the schedule table. An action is a function
 that returns nothing and has no argument. Let's define 2 actions for our led,
@@ -89,7 +90,9 @@ blinkLED.at(250,ledOff);
 
 Actions may be inserted at a date greater than the period by will not be processed until the period is changed so that the date is lower than or equal to the period.
 
-## Starting a schedule table
+The dates of actions cannot be set at a date greater than 2<sup>31</sup>-1 divided by the timebase. This allows to up to more than 2 billions of milliseconds, that is 24 days to schedule actions.
+
+### Starting a schedule table
 
 A schedule table must be started to process the actions. This is done by
 calling the method start. Without any argument, the schedule table is started
@@ -106,7 +109,7 @@ or
 blinkLED.start(10); // starts blinkLED for 10 periods
 ```
 
-## Stopping a schedule table
+### Stopping a schedule table
 
 A schedule table may be stopped by calling the method stop
 
@@ -114,7 +117,7 @@ A schedule table may be stopped by calling the method stop
 blinkLED.stop(); // stop blinkLED
 ```
 
-## Setting the period
+### Setting the period
 
 The period of a schedule table may be changed during the execution of the
 application by calling the setPeriod method
@@ -126,7 +129,7 @@ blinkLED.setPeriod(1000); // change blinkLED period to 1000
 If a shorter period is used, actions with date greater  than the period are not processed
 anymore
 
-## Removing actions
+### Removing actions
 
 Actions can be removed by using the removeAt method on a stopped schedule table.
 If called on a running schedule table, this method has no effect.
@@ -140,7 +143,7 @@ myScheduleTable.removeAt(300);
 
 removes the action(s) standing at date 300.
 
-## Emptying a schedule table
+### Emptying a schedule table
 
 All actions can be removed by using the empty method. The schedule table is stopped.
 
@@ -148,7 +151,7 @@ All actions can be removed by using the empty method. The schedule table is stop
 myScheduleTable.empty();
 ```
 
-## Processing a schedule table
+### Processing a schedule table
 
 Schedule tables should be updated as fast as possible and at least every
 millisecond if you want to have the actions processed at a reasonably accurate
