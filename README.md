@@ -4,13 +4,23 @@
 
 A Schedule Table Library for Arduino
 
+## Changelog
+
+- 1.4     Added ```empty()```, and ```removeAt()```` methods. Objects are usable on ATTiny. No more memory
+        allocation.
+- 1.3     Use template for schedule table size. This prevents dynamic memory
+        allocation and allows to use schedule tables on ATTiny.
+- 1.2     Initial release.
+
+## Description
+
 A schedule table is a data structure to schedule actions along a timeline.
 A schedule table has a period and can process one or more actions.
 For instance one can depict a schedule table with period 500 as follow
 
 <img src="http://locoduino.org/pic/github/st.png">
 
-Actions may be set at dates inside the schedule table.
+Actions may be set a dates inside the schedule table.
 Suppose you want to flash a LED every 500 ms, a first action, ON may be set
 at date 200 and a second one, OFF, may be set at date 250.
 
@@ -76,6 +86,8 @@ blinkLED.at(200,ledOn);
 blinkLED.at(250,ledOff);
 ```
 
+Actions may be inserted at a date greater than the period by will not be processed until the period is changed so that the date is lower than or equal to the period.
+
 ## Starting a schedule table
 
 A schedule table must be started to process the actions. This is done by
@@ -110,7 +122,7 @@ application by calling the setPeriod method
 blinkLED.setPeriod(1000); // change blinkLED period to 1000
 ```
 
-If a shorter period is used, action beyond the period are not processed
+If a shorter period is used, actions with date greater  than the period are not processed
 anymore
 
 ## Removing actions
@@ -129,7 +141,7 @@ removes the action(s) standing at date 300.
 
 ## Emptying a schedule table
 
-All actions can be removed by using the empty method.
+All actions can be removed by using the empty method. The schedule table is stopped.
 
 ```C++
 myScheduleTable.empty();

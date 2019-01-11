@@ -1,7 +1,7 @@
 /*
  * Schedule tables for Arduino
  *
- * Copyright Jean-Luc Béchennec 2015
+ * Copyright Jean-Luc Béchennec 2015-2019
  *
  *  This software is distributed under the GNU Public Licence v2 (GPLv2)
  *
@@ -18,6 +18,9 @@
 
 #include "ScheduleTable.h"
 
+/*
+ * For debug, print a slot
+ */
 void ScheduleTableActionSlot::print()
 {
   Serial.print(mOffset);
@@ -31,8 +34,15 @@ void ScheduleTableActionSlot::print()
   }
 }
 
+/*
+ * At start the list of schedule tables is empty
+ */
 ScheduleTable *ScheduleTable::scheduleTableList = NULL;
 
+/*
+ * Insert an action in a schedule table.
+ * The action is put at its location according to its date
+ */
 void ScheduleTable::insert(
   const uint32_t  inOffset,
   void            *inAction,
@@ -51,6 +61,9 @@ void ScheduleTable::insert(
   slots[mSize++] = point;
 }
 
+/*
+ * Insert and action which is an object
+ */
 void ScheduleTable::insertAction(
   const uint32_t      inOffset,
   ScheduleTableAction *inAction)
@@ -58,6 +71,9 @@ void ScheduleTable::insertAction(
   insert(inOffset, inAction, false);
 }
 
+/*
+ * Insert an action which is a function
+ */
 void ScheduleTable::insertAction(
   const uint32_t  inOffset,
   function        inAction)
@@ -65,6 +81,9 @@ void ScheduleTable::insertAction(
   insert(inOffset, (void *) inAction, true);
 }
 
+/*
+ * Add an action (function) to the schedule after computing its actual offset
+ */
 void ScheduleTable::at(
   uint32_t offset,
   function action)
@@ -72,12 +91,13 @@ void ScheduleTable::at(
   if (mSize < mMaxSize) {
     /* compute the actual offset */
     offset *= mTimeBase;
-    if (offset <= mPeriod) {
-      insertAction(offset, action);
-    }
+    insertAction(offset, action);
   }
 }
 
+/*
+ * Add an action (object) to the schedule after computing its actual offset
+ */
 void ScheduleTable::at(
   uint32_t offset,
   ScheduleTableAction& action)
@@ -85,33 +105,39 @@ void ScheduleTable::at(
   if (mSize < mMaxSize) {
     /* compute the actual offset */
     offset *= mTimeBase;
-    if (offset <= mPeriod) {
-      insertAction(offset, &action);
-    }
+    insertAction(offset, &action);
   }
 }
 
+/*
+ * check the schedule table to look for actions to perform
+ */
 void ScheduleTable::updateIt()
 {
   if (mState != SCHEDULETABLE_STOPPED) {
     uint32_t currentDate = millis();
     uint32_t offsetDate = currentDate - mOrigin;
     ScheduleTableActionSlot *slots = storage();
+    bool continueProcessing;
 
-    while (mCurrent < mSize &&
-           slots[mCurrent].perform(offsetDate, mPeriod)) {
-      mCurrent++;
-    }
-    if (mCurrent == mSize) {
-      mCurrent = 0;
-      if (mState == SCHEDULETABLE_PERIODIC_FOREVER ||
-          (mState == SCHEDULETABLE_PERIODIC && --mHowMuch != 0)) {
-        mOrigin += mPeriod;
+    do {
+      continueProcessing = slots[mCurrent].perform(offsetDate, mPeriod);
+      if (continueProcessing) {
+        mCurrent++;
+        if (mCurrent == mSize) {
+          mCurrent = 0;
+          if (mState == SCHEDULETABLE_PERIODIC_FOREVER ||
+              (mState == SCHEDULETABLE_PERIODIC && --mHowMuch != 0)) {
+            mOrigin += mPeriod;
+            offsetDate = currentDate - mOrigin;
+          }
+          else {
+            mState = SCHEDULETABLE_STOPPED;
+            continueProcessing = false;
+          }
+        }
       }
-      else {
-        mState = SCHEDULETABLE_STOPPED;
-      }
-    }
+    } while (continueProcessing);
   }
 }
 
@@ -131,16 +157,25 @@ void ScheduleTable::stop()
   mState = SCHEDULETABLE_STOPPED;
 }
 
+/*
+ * Change the period of the schedule table
+ * Fail silently if period is lower than 1 or greater than
+ * 2^31 - 1
+ */
 void ScheduleTable::setPeriod(unsigned int period)
 {
-  mPeriod = period * mTimeBase;
+  if (period > 0 && period <= (0x7FFFFFFF / mTimeBase)) {
+    mPeriod = period * mTimeBase;
+  }
 }
 
 /*
  * Remove all the actions from the schedule table
+ * Stop it.
  */
 void ScheduleTable::empty()
 {
+  mState = SCHEDULETABLE_STOPPED;
   mSize = 0;
 }
 
@@ -151,9 +186,10 @@ void ScheduleTable::empty()
 void ScheduleTable::removeAt(const uint32_t inDate)
 {
   if (mState == SCHEDULETABLE_STOPPED) {
+    const uint32_t actualDate = inDate * mTimeBase;
     ScheduleTableActionSlot *slots = storage();
     for (uint8_t index = 0; index < mSize; index++) {
-      if (slots[index].offset() == inDate) {
+      if (slots[index].offset() == actualDate) {
         for (uint8_t s = index; s < (mSize - 1); s++) {
           slots[s] = slots[s + 1];
         }
@@ -164,9 +200,21 @@ void ScheduleTable::removeAt(const uint32_t inDate)
   }
 }
 
+/*
+ * Print a schedule table for debug purpose
+ */
 void ScheduleTable::print()
 {
-  Serial.print('['); Serial.print(mSize); Serial.print("] ");
+  Serial.print('[');
+  Serial.print(mSize);
+  Serial.print(']');
+
+  Serial.print('(');
+  Serial.print(mPeriod);
+  Serial.print('/');
+  Serial.print(mTimeBase);
+  Serial.print(F(") "));
+
   ScheduleTableActionSlot *slots = storage();
   for (uint8_t index = 0; index < mSize; index++) {
     slots[index].print();
@@ -175,6 +223,9 @@ void ScheduleTable::print()
   Serial.println();
 }
 
+/*
+ * update all the schedule tables by iterating over the list
+ */
 void ScheduleTable::update()
 {
   ScheduleTable *currentScheduleTable = scheduleTableList;
