@@ -170,6 +170,8 @@ public:
   void start(unsigned int howMuch = 0);
   /* Stop the schedule table */
   void stop();
+  /* Return true if the schedule table is started */
+  bool isRunning() const;
   /* Set the period of the schedule table */
   void setPeriod(unsigned int period);
   /* Remove all the actions from the schedule table */

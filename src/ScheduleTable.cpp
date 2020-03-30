@@ -157,6 +157,12 @@ void ScheduleTable::stop()
   mState = SCHEDULETABLE_STOPPED;
 }
 
+/* Return true if the schedule table is started */
+bool ScheduleTable::isRunning() const
+{
+  return (SCHEDULETABLE_STOPPED != mState);
+}
+
 /*
  * Change the period of the schedule table
  * Fail silently if period is lower than 1 or greater than
