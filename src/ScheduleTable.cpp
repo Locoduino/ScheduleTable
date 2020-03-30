@@ -114,7 +114,7 @@ void ScheduleTable::at(
  */
 void ScheduleTable::updateIt()
 {
-  if (mState != SCHEDULETABLE_STOPPED) {
+  if (mState != SCHEDULETABLE_STOPPED && mSize > 0) {
     uint32_t currentDate = millis();
     uint32_t offsetDate = currentDate - mOrigin;
     ScheduleTableActionSlot *slots = storage();
